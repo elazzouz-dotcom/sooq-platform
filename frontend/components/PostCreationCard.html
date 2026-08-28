@@ -1,0 +1,303 @@
+<!-- منصة SOOQ - بطاقة إنشاء المنشورات -->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إنشاء منشور - منصة SOOQ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .glass-card {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(100, 116, 139, 0.2);
+        }
+
+        .glass-card:hover {
+            background: rgba(15, 23, 42, 0.9);
+            border-color: rgba(100, 116, 139, 0.3);
+        }
+
+        textarea:focus,
+        input:focus {
+            outline: none;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .pulse-dot {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .loading {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-200">
+
+    <div class="min-h-screen p-6">
+        <div class="max-w-2xl mx-auto">
+            <!-- Mini Workspace & Post Management Card -->
+            <div class="glass-card rounded-2xl p-6 border border-slate-800 relative overflow-hidden group">
+                
+                <!-- Header with Connection Status -->
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800/60 pb-3">
+                        <span class="text-xs font-bold text-slate-400 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+                            </svg>
+                            مساحة عمل GitHub والوسائط
+                        </span>
+                        <div class="flex items-center gap-2">
+                            <span id="connectionStatus" class="text-[10px] text-slate-400 bg-slate-800/50 px-2 py-1 rounded-md">متصل</span>
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 pulse-dot" title="متصل"></span>
+                        </div>
+                    </div>
+
+                    <!-- Post Creation Box -->
+                    <div class="space-y-2">
+                        <textarea 
+                            id="postContent" 
+                            rows="4" 
+                            placeholder="اكتب منشورك أو أرفق وسائط جديدة..." 
+                            class="w-full bg-slate-900/40 border border-slate-800 rounded-xl p-4 text-sm text-slate-200 placeholder-slate-500 focus:border-indigo-500 transition-all resize-none"
+                        ></textarea>
+                    </div>
+                </div>
+
+                <!-- Interlocking Action Bar -->
+                <div class="mt-6 flex flex-col md:flex-row items-center justify-between gap-3 border-t border-slate-800/80 pt-4">
+                    
+                    <!-- Left Tools: GitHub Media Archive -->
+                    <div class="flex items-center gap-2 w-full md:w-auto">
+                        <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-lg text-xs flex items-center gap-2 transition-all hover:shadow-lg hover:shadow-indigo-600/20">
+                            <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4-5.586a1 1 0 011.414 0L15 16m-2-5l1.586-1.586a1 1 0 011.414 0L19 12m-5 4h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <span>رفع وسائط</span>
+                            <input type="file" id="mediaInput" multiple accept="image/*,video/*" class="hidden" onchange="uploadMediaToGitHub(event)">
+                        </label>
+
+                        <!-- Dynamic Badge -->
+                        <div class="flex items-center gap-2">
+                            <span id="archiveStatus" class="text-[10px] text-slate-400 bg-slate-800/50 px-3 py-1.5 rounded-md font-medium">المعرض: 0</span>
+                            <button onclick="viewArchive()" class="text-[10px] text-indigo-400 hover:text-indigo-300 px-2 py-1 rounded-md hover:bg-slate-800/50 transition-all">عرض المعرض</button>
+                        </div>
+                    </div>
+
+                    <!-- Right Tools: Publishing & AI Automation -->
+                    <div class="flex items-center gap-2 w-full md:w-auto">
+                        <button 
+                            onclick="previewPost()" 
+                            class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-2 rounded-lg text-xs transition-all font-medium flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                            معاينة
+                        </button>
+
+                        <button 
+                            onclick="optimizeWithAI()" 
+                            class="bg-indigo-950/60 hover:bg-indigo-900/80 text-indigo-300 border border-indigo-800/50 px-3 py-2 rounded-lg text-xs transition-all font-medium flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                            تحسين AI
+                        </button>
+
+                        <button 
+                            onclick="publishPost()" 
+                            class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 py-2 rounded-lg text-xs shadow-md shadow-indigo-600/30 transition-all flex items-center gap-1 whitespace-nowrap">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            نشر الآن
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Status Messages -->
+                <div id="statusMessage" class="mt-4 hidden p-3 rounded-lg text-xs font-medium"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        let uploadedMediaUrls = [];
+        const API_BASE = '/api/v1';
+
+        async function uploadMediaToGitHub(event) {
+            const files = event.target.files;
+            const statusElem = document.getElementById('archiveStatus');
+            const messageElem = document.getElementById('statusMessage');
+
+            if (files.length === 0) return;
+
+            statusElem.innerText = '⏳ جاري الأرشفة...';
+            messageElem.classList.add('hidden');
+
+            let successCount = 0;
+
+            for (let file of files) {
+                const reader = new FileReader();
+                
+                reader.onload = async function(e) {
+                    const base64Data = e.target.result.split(',')[1];
+                    
+                    try {
+                        const response = await fetch(`${API_BASE}/media/upload`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                fileName: file.name,
+                                base64Data: base64Data,
+                                type: file.type
+                            })
+                        });
+
+                        const data = await response.json();
+                        
+                        if (data.status === 'success') {
+                            uploadedMediaUrls.push(data.data.mediaUrl);
+                            successCount++;
+                            showMessage(`✅ تم رفع: ${file.name}`, 'success');
+                        }
+                    } catch (error) {
+                        console.error('خطأ:', error);
+                        showMessage(`❌ خطأ في رفع: ${file.name}`, 'error');
+                    }
+                    
+                    statusElem.innerText = `المعرض: ${uploadedMediaUrls.length}`;
+                };
+                
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function optimizeWithAI() {
+            const textarea = document.getElementById('postContent');
+            
+            if (!textarea.value.trim()) {
+                showMessage('❌ يرجى كتابة نص قبل التحسين', 'error');
+                return;
+            }
+
+            textarea.disabled = true;
+            showMessage('⏳ جاري تحسين النص...', 'info');
+
+            // محاكاة تحسين النص (في الإنتاج، ستُستدعى خدمة AI الحقيقية)
+            setTimeout(() => {
+                textarea.value = textarea.value + ' ✨';
+                showMessage('✅ تم تحسين النص', 'success');
+                textarea.disabled = false;
+            }, 1000);
+        }
+
+        async function previewPost() {
+            const textarea = document.getElementById('postContent');
+            
+            if (!textarea.value.trim() && uploadedMediaUrls.length === 0) {
+                showMessage('❌ أضف محتوى أو وسائط أولاً', 'error');
+                return;
+            }
+
+            showMessage('👁️ جاري إنشاء المعاينة...', 'info');
+
+            try {
+                const response = await fetch(`${API_BASE}/posts/preview`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        content: textarea.value,
+                        mediaUrls: uploadedMediaUrls
+                    })
+                });
+
+                const data = await response.json();
+                if (data.status === 'success') {
+                    alert(`المعاينة:\n\n${data.data.preview}\n\nالوسائط: ${data.data.mediaCount}`);
+                }
+            } catch (error) {
+                console.error('خطأ:', error);
+            }
+        }
+
+        async function publishPost() {
+            const textarea = document.getElementById('postContent');
+            
+            if (!textarea.value.trim() && uploadedMediaUrls.length === 0) {
+                showMessage('❌ أضف محتوى قبل النشر', 'error');
+                return;
+            }
+
+            const btn = event.target;
+            btn.disabled = true;
+            showMessage('⏳ جاري النشر...', 'info');
+
+            try {
+                const response = await fetch(`${API_BASE}/posts/create`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        content: textarea.value,
+                        mediaUrls: uploadedMediaUrls
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    showMessage('✅ تم نشر المنشور بنجاح!', 'success');
+                    textarea.value = '';
+                    uploadedMediaUrls = [];
+                    document.getElementById('archiveStatus').innerText = 'المعرض: 0';
+                    document.getElementById('mediaInput').value = '';
+                }
+            } catch (error) {
+                console.error('خطأ:', error);
+                showMessage('❌ خطأ في النشر', 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function viewArchive() {
+            if (uploadedMediaUrls.length === 0) {
+                showMessage('❌ لم تقم برفع أي وسائط بعد', 'error');
+                return;
+            }
+            alert(`الوسائط المرفوعة (${uploadedMediaUrls.length}):\n\n${uploadedMediaUrls.map((url, i) => `${i+1}. ${url.substring(0, 60)}...`).join('\n')}`);
+        }
+
+        function showMessage(message, type = 'info') {
+            const elem = document.getElementById('statusMessage');
+            const colors = {
+                'success': 'bg-green-900/30 text-green-400 border border-green-800',
+                'error': 'bg-red-900/30 text-red-400 border border-red-800',
+                'info': 'bg-blue-900/30 text-blue-400 border border-blue-800'
+            };
+            
+            elem.className = `mt-4 p-3 rounded-lg text-xs font-medium ${colors[type]}`;
+            elem.innerText = message;
+            elem.classList.remove('hidden');
+            
+            if (type === 'success') {
+                setTimeout(() => elem.classList.add('hidden'), 5000);
+            }
+        }
+    </script>
+</body>
+</html>
